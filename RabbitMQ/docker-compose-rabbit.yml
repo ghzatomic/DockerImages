@@ -1,0 +1,21 @@
+version: '3.3'
+services:
+  rabbit:
+    image: rabbitmq:3.7.9-management-alpine
+    container_name: rabbit
+    restart: always
+    ports:
+    - 5672:5672
+    - 15672:15672
+    - 15674:15674
+    - 61613:61613
+    volumes:
+    - ./rabbitmq/rabbitmq-definitions.json:/opt/definitions.json:ro
+    - ./rabbitmq/rabbitmq.config:/etc/rabbitmq/rabbitmq.config:ro
+    - rabbit1:/var/lib/rabbitmq
+    environment:
+    - "RABBITMQ_DEFAULT_USER=usuario123"
+    - "RABBITMQ_DEFAULT_PASS=senha123"
+volumes:
+  rabbit1:
+    driver: local

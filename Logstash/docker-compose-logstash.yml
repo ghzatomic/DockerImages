@@ -1,0 +1,21 @@
+version: '3.3'
+services:
+  logstash:
+    image: logstash:6.5.1
+#    ports:
+#      - "8080:8080"
+    restart: always
+    depends_on:
+      - elastic
+    volumes:
+      - ./logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+#  kibana:
+#    depends_on:
+#    - elastic
+#    environment:
+#      ELASTICSEARCH_PASSWORD: changeme
+#      ELASTICSEARCH_URL: http://elastic_url:9200
+#      ELASTICSEARCH_USERNAME: elastic
+#    image: docker.elastic.co/kibana/kibana-oss:6.5.1
+#    ports:
+#    - 5601:5601
