@@ -3,8 +3,8 @@ services:
   ubuntu-wetty:
     build: .
     ports:
-      - "3001:80"
-      - "3002:443"
+      - "3001:3001"
+      - "3002:8080"
     volumes:
       - ./shared:/Dados
     container_name: ubuntu-wetty

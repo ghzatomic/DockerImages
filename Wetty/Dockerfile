@@ -9,7 +9,6 @@ RUN apt-get update && apt-get install -y \
     software-properties-common \
     build-essential \
     openssh-client \
-    nginx \
     certbot \
     python3-certbot-nginx
 
@@ -42,15 +41,11 @@ RUN wget https://github.com/coder/code-server/releases/download/v4.0.1/code-serv
     && mv code-server-4.0.1-linux-amd64 /usr/local/lib/code-server \
     && ln -s /usr/local/lib/code-server/bin/code-server /usr/local/bin/code-server
 
-# Configure Nginx
-RUN rm /etc/nginx/sites-enabled/default
-COPY nginx.conf /etc/nginx/sites-available/default
-RUN ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
-
 # Exponha as portas necessárias
-EXPOSE 80 443 3000 8080
+EXPOSE 3001 8080
 # Obter certificado SSL com Certbot
-RUN certbot --nginx --non-interactive --agree-tos --email your_email@example.com -d your_domain_or_ip
+run curl -sS https://bootstrap.pypa.io/get-pip.py | python3.11
+run pip install cffi
 
 # Comando para iniciar todos os serviços
-CMD ["sh", "-c", "nginx -g 'daemon off;' & wetty --port 3000 --ssh-host host.docker.internal --ssh-user testuser & code-server --bind-addr 0.0.0.0:8080 --auth none"]
+CMD ["sh", "-c", "wetty --port 3001 --ssh-host host.docker.internal --ssh-user testuser & code-server --bind-addr 0.0.0.0:8080 --auth none"]
