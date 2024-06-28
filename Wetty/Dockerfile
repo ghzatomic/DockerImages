@@ -9,7 +9,8 @@ RUN apt-get update && apt-get install -y \
     openssh-server \
     wget \
     software-properties-common \
-    build-essential 
+    build-essential \
+    sudo
 
 # Instale Python 3.11
 RUN add-apt-repository ppa:deadsnakes/ppa && \
@@ -23,16 +24,16 @@ RUN apt-get install -y openjdk-17-jdk
 # Instale o gerenciador de pacotes `n` e a última versão do Node.js
 RUN curl -L https://raw.githubusercontent.com/tj/n/master/bin/n -o /usr/local/bin/n && \
     chmod +x /usr/local/bin/n && \
-    n 18
+    n v18.19.1
 
 # Remova o Node.js instalado pelo apt para evitar conflitos
 #RUN apt-get remove -y nodejs npm
 
 # Instale Wetty
-RUN npm install -g wetty
+RUN npm -g install wetty@2.6.0
 
-# Crie um usuário para login
-RUN useradd -ms /bin/bash caio && echo 'caio:123' | chpasswd
+# Crie um usuário para login e adicione ao grupo sudo
+RUN useradd -ms /bin/bash caio && echo 'caio:123' | chpasswd && usermod -aG sudo caio
 
 # Instale code-server
 RUN wget https://github.com/coder/code-server/releases/download/v4.0.1/code-server-4.0.1-linux-amd64.tar.gz \
@@ -44,4 +45,4 @@ RUN wget https://github.com/coder/code-server/releases/download/v4.0.1/code-serv
 EXPOSE 3001 8080
 
 # Comando para iniciar Wetty e code-server
-CMD ["sh", "-c", "wetty --port 3001 --ssh-host host.docker.internal --ssh-user testuser & code-server --bind-addr 0.0.0.0:8080 --auth none"]
+CMD ["sh", "-c", "wetty --port 3001 --ssh-host localhost --ssh-user caio --ssh-password 123 --ssh-reconnect true --ssh-reconnect-timeout 60000 & code-server --bind-addr 0.0.0.0:8080 --auth none"]
