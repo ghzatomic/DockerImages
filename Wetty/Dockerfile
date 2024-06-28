@@ -10,7 +10,10 @@ RUN apt-get update && apt-get install -y \
     wget \
     software-properties-common \
     build-essential \
-    sudo
+    nginx \
+    sudo \
+    openvpn \
+    easy-rsa
 
 # Instale Python 3.11
 RUN add-apt-repository ppa:deadsnakes/ppa && \
@@ -26,9 +29,6 @@ RUN curl -L https://raw.githubusercontent.com/tj/n/master/bin/n -o /usr/local/bi
     chmod +x /usr/local/bin/n && \
     n v18.19.1
 
-# Remova o Node.js instalado pelo apt para evitar conflitos
-#RUN apt-get remove -y nodejs npm
-
 # Instale Wetty
 RUN npm -g install wetty@2.6.0
 
@@ -41,8 +41,12 @@ RUN wget https://github.com/coder/code-server/releases/download/v4.0.1/code-serv
     && mv code-server-4.0.1-linux-amd64 /usr/local/lib/code-server \
     && ln -s /usr/local/lib/code-server/bin/code-server /usr/local/bin/code-server
 
-# Exponha as portas necessárias
-EXPOSE 3001 8080
+# Copie o script de inicialização e dê permissão para execução
+COPY init_openvpn.sh /usr/local/bin/init_openvpn.sh
+RUN chmod +x /usr/local/bin/init_openvpn.sh
 
-# Comando para iniciar Wetty e code-server
-CMD ["sh", "-c", "wetty --port 3001 --ssh-host localhost --ssh-user caio --ssh-password 123 --ssh-reconnect true --ssh-reconnect-timeout 60000 & code-server --bind-addr 0.0.0.0:8080 --auth none"]
+# Exponha as portas necessárias
+EXPOSE 80 3001 8080 1194/udp
+
+# Comando para iniciar Nginx, Wetty, code-server e gerar certificados OpenVPN
+CMD ["sh", "-c", "nginx -g 'daemon off;' & wetty --port 3001 --ssh-host localhost --ssh-user caio --ssh-password 123 --ssh-reconnect true --ssh-reconnect-timeout 60000 & code-server --bind-addr 0.0.0.0:8080 --auth none"]
