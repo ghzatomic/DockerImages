@@ -1,6 +1,6 @@
 version: '3'
 services:
-  ubuntu-wetty:
+  ubuntu-webtty:
     build: .
     ports:
       - "3001:3001"

@@ -13,7 +13,11 @@ RUN apt-get update && apt-get install -y \
     nginx \
     sudo \
     openvpn \
-    easy-rsa
+    easy-rsa \
+    cmake \
+    libjson-c-dev \
+    libwebsockets-dev \
+    libuv1-dev
 
 # Instale Python 3.11
 RUN add-apt-repository ppa:deadsnakes/ppa && \
@@ -29,11 +33,19 @@ RUN curl -L https://raw.githubusercontent.com/tj/n/master/bin/n -o /usr/local/bi
     chmod +x /usr/local/bin/n && \
     n v18.19.1
 
-# Instale Wetty
-RUN npm -g install wetty@2.6.0
+# Instale ttyd
+RUN git clone https://github.com/tsl0922/ttyd.git /ttyd && \
+    cd /ttyd && \
+    mkdir build && \
+    cd build && \
+    cmake .. && \
+    make && \
+    make install
 
 # Crie um usuário para login e adicione ao grupo sudo
 RUN useradd -ms /bin/bash caio && echo 'caio:123' | chpasswd && usermod -aG sudo caio
+
+RUN echo "caio:$(id -u caio)" > /etc/ttyd-uid
 
 # Instale code-server
 RUN wget https://github.com/coder/code-server/releases/download/v4.0.1/code-server-4.0.1-linux-amd64.tar.gz \
@@ -48,5 +60,6 @@ RUN chmod +x /usr/local/bin/init_openvpn.sh
 # Exponha as portas necessárias
 EXPOSE 80 3001 8080 1194/udp
 
-# Comando para iniciar Nginx, Wetty, code-server e gerar certificados OpenVPN
-CMD ["sh", "-c", "nginx -g 'daemon off;' & wetty --port 3001 --ssh-host localhost --ssh-user caio --ssh-password 123 --ssh-reconnect true --ssh-reconnect-timeout 60000 & code-server --bind-addr 0.0.0.0:8080 --auth none"]
+# Comando para iniciar Nginx, ttyd, code-server e gerar certificados OpenVPN
+#CMD ["sh", "-c", "nginx -g 'daemon off;' & ttyd -p 3001 -W -c caio:123 -u $(cut -d: -f2 /etc/ttyd-uid) bash & code-server --bind-addr 0.0.0.0:8080 --auth none "]
+CMD ["sh", "-c", "nginx -g 'daemon off;' & ttyd -p 3001 -W -u $(cut -d: -f2 /etc/ttyd-uid) bash & code-server --bind-addr 0.0.0.0:8080 --auth none "]
