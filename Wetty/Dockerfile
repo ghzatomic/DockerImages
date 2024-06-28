@@ -4,13 +4,12 @@ FROM ubuntu:latest
 RUN apt-get update && apt-get install -y \
     curl \
     git \
+    nodejs \
+    npm \
     openssh-server \
     wget \
     software-properties-common \
-    build-essential \
-    openssh-client \
-    certbot \
-    python3-certbot-nginx
+    build-essential 
 
 # Instale Python 3.11
 RUN add-apt-repository ppa:deadsnakes/ppa && \
@@ -43,9 +42,6 @@ RUN wget https://github.com/coder/code-server/releases/download/v4.0.1/code-serv
 
 # Exponha as portas necessárias
 EXPOSE 3001 8080
-# Obter certificado SSL com Certbot
-run curl -sS https://bootstrap.pypa.io/get-pip.py | python3.11
-run pip install cffi
 
-# Comando para iniciar todos os serviços
+# Comando para iniciar Wetty e code-server
 CMD ["sh", "-c", "wetty --port 3001 --ssh-host host.docker.internal --ssh-user testuser & code-server --bind-addr 0.0.0.0:8080 --auth none"]
